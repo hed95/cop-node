@@ -1,23 +1,5 @@
 pipeline:
 
-  build:
-    image: quay.io/ukhomeofficedigital/drone-docker
-    commands:
-      - docker build -t cop-node:$${DRONE_COMMIT_SHA} .
-    when:
-      event: push
-
-  vulnerability-scan:
-    image: quay.io/ukhomeofficedigital/anchore-submission:latest
-    dockerfile: Dockerfile
-    image_name: cop-node:${DRONE_COMMIT_SHA}
-    local_image: true
-    tolerate: low
-    fail_on_detection: false
-    when:
-      branch: master
-      event: push
-
   synch_secrets:
     image: quay.io/ukhomeofficedigital/cop-secrets
     environment:
@@ -34,6 +16,40 @@ pipeline:
       environment: secrets
       event: deployment
 
+  build_matrix:
+    image: quay.io/ukhomeofficedigital/drone-docker
+    commands:
+      - docker build -t cop-node:${NODE_VERSION} -f Dockerfile-${NODE_VERSION} .
+    when:
+      event: push
+
+  vulnerability_scan_matrix:
+    image: quay.io/ukhomeofficedigital/anchore-submission:latest
+    dockerfile: Dockerfile-${NODE_VERSION}
+    image_name: cop-node:${NODE_VERSION}
+    local_image: true
+    tolerate: low
+    fail_on_detection: false
+    when:
+      branch: master
+      event: push
+
+  image_to_quay_matrix:
+    image: quay.io/ukhomeofficedigital/drone-docker
+    secrets:
+    - source: QUAY_USERNAME
+      target: DOCKER_USERNAME
+    - source: QUAY_PASSWORD
+      target: DOCKER_PASSWORD
+    registry: quay.io
+    repo: quay.io/ukhomeofficedigital/cop-node
+    dockerfile: Dockerfile-${NODE_VERSION}
+    tags:
+      - ${NODE_VERSION}
+    when:
+      branch: master
+      event: push
+
   image_to_quay:
     image: quay.io/ukhomeofficedigital/drone-docker
     secrets:
@@ -45,7 +61,6 @@ pipeline:
     repo: quay.io/ukhomeofficedigital/cop-node
     tags:
       - ${DRONE_COMMIT_SHA}
-      - latest
     when:
       branch: master
       event: push
@@ -67,3 +82,13 @@ pipeline:
       branch: master
       event: [ push, deployment ]
       status: [ success, failure ]
+
+matrix:
+  NODE_VERSION:
+    - 10
+    - 10-alpine
+    - 11
+    - 11-alpine
+    - 11-python2
+    - 12
+    - 12-alpine
