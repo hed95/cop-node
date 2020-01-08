@@ -1,0 +1,14 @@
+FROM node:10-alpine
+
+ENV PYTHONUNBUFFERED=1
+
+RUN apk update && apk upgrade
+
+RUN apk add --no-cache python && \
+    python -m ensurepip && \
+    rm -r /usr/lib/python*/ensurepip && \
+    pip install --upgrade pip setuptools && \
+    rm -r /root/.cache
+
+WORKDIR /app
+CMD [ "node" ]
