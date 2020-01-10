@@ -1,4 +1,5 @@
-FROM node:12-alpine
+ARG NODE_TAG=10-alpine
+FROM node:$NODE_TAG
 
 RUN apk update && apk upgrade
 
