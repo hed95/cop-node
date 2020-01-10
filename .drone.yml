@@ -16,19 +16,19 @@ pipeline:
       environment: secrets
       event: deployment
       matrix:
-        NODE_VERSION: 12-alpine
+        NODE_VERSION: 12
 
   build_matrix:
     image: quay.io/ukhomeofficedigital/drone-docker
     commands:
-      - docker build -t cop-node:${NODE_VERSION} -f Dockerfile-${NODE_VERSION} .
+      - docker build -t cop-node:${TAG_NAME} -f Dockerfile-${DOCKER_FILENAME} --build-arg NODE_TAG=${TAG_NAME} .
     when:
       event: push
 
   vulnerability_scan_matrix:
     image: quay.io/ukhomeofficedigital/anchore-submission:latest
-    dockerfile: Dockerfile-${NODE_VERSION}
-    image_name: cop-node:${NODE_VERSION}
+    dockerfile: Dockerfile-${DOCKER_FILENAME}
+    image_name: cop-node:${TAG_NAME}
     local_image: true
     tolerate: low
     fail_on_detection: false
@@ -43,11 +43,11 @@ pipeline:
       target: DOCKER_USERNAME
     - source: QUAY_PASSWORD
       target: DOCKER_PASSWORD
-    registry: quay.io
-    repo: quay.io/ukhomeofficedigital/cop-node
-    dockerfile: Dockerfile-${NODE_VERSION}
-    tags:
-      - ${NODE_VERSION}
+    commands:
+      - docker build --rm=true -f Dockerfile-${DOCKER_FILENAME} -t cop-node:${TAG_NAME} --build-arg NODE_TAG=${TAG_NAME} . --pull=true --label org.label-schema.schema-version=1.0 --label org.label-schema.build-date=${DRONE_BUILD_STARTED} --label org.label-schema.vcs-ref=${TAG_NAME} --label org.label-schema.vcs-url=${DRONE_GIT_HTTP_URL}
+      - docker tag cop-node:${TAG_NAME} quay.io/ukhomeofficedigital/cop-node:${TAG_NAME}
+      - docker push quay.io/ukhomeofficedigital/cop-node:${TAG_NAME}
+      - docker rmi cop-node:${TAG_NAME}
     when:
       branch: master
       event: push
@@ -62,7 +62,7 @@ pipeline:
         *{{repo.name}} - Build {{build.number}} - {{uppercasefirst build.deployTo}} - {{uppercase build.status}}*
         {{build.link}}
       {{else}}
-        *{{repo.name}} - ${NODE_VERSION} - Build {{build.number}} - Development - {{uppercase build.status}}*
+        *{{repo.name}} - ${TAG_NAME} - Build {{build.number}} - Development - {{uppercase build.status}}*
         {{build.link}}
       {{/build.deployTo}}
     when:
@@ -71,12 +71,28 @@ pipeline:
       status: [ success, failure ]
 
 matrix:
-  NODE_VERSION:
-    - 10
-    - 10-alpine
-    - 10-alpine-python2
-    - 11
-    - 11-alpine
-    - 11-python2
-    - 12
-    - 12-alpine
+  include:
+    - DOCKER_FILENAME: alpine
+      NODE_VERSION: 10-alpine
+      TAG_NAME: 10-alpine
+    - DOCKER_FILENAME: alpine
+      NODE_VERSION: 11-alpine
+      TAG_NAME: 11-alpine
+    - DOCKER_FILENAME: alpine
+      NODE_VERSION: 12-alpine
+      TAG_NAME: 12-alpine
+    - DOCKER_FILENAME: stretch
+      NODE_VERSION: 10
+      TAG_NAME: 10
+    - DOCKER_FILENAME: stretch
+      NODE_VERSION: 11
+      TAG_NAME: 11
+    - DOCKER_FILENAME: stretch
+      NODE_VERSION: 12
+      TAG_NAME: 12
+    - DOCKER_FILENAME: alpine-python2
+      NODE_VERSION: 10-alpine
+      TAG_NAME: 10-alpine-python2
+    - DOCKER_FILENAME: stretch-python2
+      NODE_VERSION: 11
+      TAG_NAME: 11-python2
