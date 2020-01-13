@@ -21,7 +21,7 @@ pipeline:
   build_matrix:
     image: quay.io/ukhomeofficedigital/drone-docker
     commands:
-      - docker build -t cop-node:${TAG_NAME} -f Dockerfile-${DOCKER_FILENAME} --build-arg NODE_TAG=${TAG_NAME} .
+      - docker build -t cop-node:$${TAG_NAME} -f Dockerfile-$${DOCKER_FILENAME} --build-arg NODE_TAG=$${NODE_VERSION} .
     when:
       event: push
 
@@ -44,10 +44,11 @@ pipeline:
     - source: QUAY_PASSWORD
       target: DOCKER_PASSWORD
     commands:
-      - docker build --rm=true -f Dockerfile-${DOCKER_FILENAME} -t cop-node:${TAG_NAME} --build-arg NODE_TAG=${TAG_NAME} . --pull=true --label org.label-schema.schema-version=1.0 --label org.label-schema.build-date=${DRONE_BUILD_STARTED} --label org.label-schema.vcs-ref=${TAG_NAME} --label org.label-schema.vcs-url=${DRONE_GIT_HTTP_URL}
-      - docker tag cop-node:${TAG_NAME} quay.io/ukhomeofficedigital/cop-node:${TAG_NAME}
-      - docker push quay.io/ukhomeofficedigital/cop-node:${TAG_NAME}
-      - docker rmi cop-node:${TAG_NAME}
+      - docker build --rm=true -f Dockerfile-$${DOCKER_FILENAME} -t cop-node:$${TAG_NAME} --build-arg NODE_TAG=$${TAG_NAME} . --pull=true --label org.label-schema.schema-version=1.0 --label org.label-schema.build-date="$(date) --label org.label-schema.vcs-ref=$${TAG_NAME} --label org.label-schema.vcs-url="https://github.com/UKHomeOffice/cop-node.git"
+      - docker tag cop-node:$${TAG_NAME} quay.io/ukhomeofficedigital/cop-node:$${TAG_NAME}
+      - echo $${DOCKER_PASSWORD} | docker login -u $${DOCKER_USERNAME} --password-stdin quay.io
+      - docker push quay.io/ukhomeofficedigital/cop-node:$${TAG_NAME}
+      - docker rmi cop-node:$${TAG_NAME}
     when:
       branch: master
       event: push

@@ -1,4 +1,5 @@
-FROM node:10-alpine
+ARG NODE_TAG=10-alpine
+FROM node:$NODE_TAG
 
 ENV PYTHONUNBUFFERED=1
 
