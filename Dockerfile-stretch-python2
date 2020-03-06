@@ -6,7 +6,8 @@ ENV PYTHONUNBUFFERED=1
 RUN apt-get update && apt-get upgrade -y && \
     apt-get remove -y mercurial && \
     apt-get install -y python2.7 python-pip && \
-    apt-get autoremove -y
+    apt-get autoremove -y && \
+    pip install PyPDF2
 
 WORKDIR /app
 CMD [ "node" ]

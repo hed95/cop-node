@@ -86,8 +86,8 @@ matrix:
       NODE_VERSION: 11
       TAG_NAME: 11-python2
     - DOCKER_FILENAME: amazonlinux-pdf
-      NODE_VERSION: 11
-      TAG_NAME: 11-amazonlinux
+      NODE_VERSION: 12
+      TAG_NAME: 12-amazonlinux
     - DOCKER_FILENAME: stretch
       NODE_VERSION: 13
       TAG_NAME: 13
