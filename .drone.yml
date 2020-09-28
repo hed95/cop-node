@@ -77,14 +77,14 @@ matrix:
       NODE_VERSION: 12-alpine
       TAG_NAME: 12-alpine
     - DOCKER_FILENAME: stretch
-      NODE_VERSION: 11
-      TAG_NAME: 11
+      NODE_VERSION: 12
+      TAG_NAME: 12-stretch
     - DOCKER_FILENAME: alpine-python2
       NODE_VERSION: 10-alpine
       TAG_NAME: 10-alpine-python2
     - DOCKER_FILENAME: stretch-python2
-      NODE_VERSION: 11
-      TAG_NAME: 11-python2
+      NODE_VERSION: 12
+      TAG_NAME: 12-python2
     - DOCKER_FILENAME: amazonlinux-pdf
       NODE_VERSION: 12
       TAG_NAME: 12-amazonlinux
